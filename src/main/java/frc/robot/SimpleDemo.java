@@ -18,11 +18,14 @@
 //   - point Main at SimpleDemo::new, or
 //   - copy Flywheel / Intake into your subsystems and delete Main below.
 
+package frc.robot;
+
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -72,6 +75,18 @@ public class SimpleDemo extends TimedRobot {
       readyBeepPlayed = true;
     }
     reportTelemetry();
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    double flywheelAmps = flywheel.simulationPeriodic();
+    double intakeAmps = intake.simulationPeriodic();
+    // Use |I| so sign quirks cannot inflate load; floor Vin so a transient spike
+    // cannot permanently brown out the sim and pin the flywheel at ~500 RPM.
+    double loaded =
+        BatterySim.calculateDefaultBatteryLoadedVoltage(
+            Math.abs(flywheelAmps), Math.abs(intakeAmps));
+    RoboRioSim.setVInVoltage(Math.max(10.0, loaded));
   }
 
   @Override
@@ -174,14 +189,5 @@ public class SimpleDemo extends TimedRobot {
     intake.reportTelemetry();
     SmartDashboard.putBoolean("Demo/IntakeAllowed", intakeAllowed);
     SmartDashboard.putBoolean("Demo/ReadyBeepPlayed", readyBeepPlayed);
-  }
-}
-
-/** WPILib entry point. Remove if your project already provides Main. */
-class Main {
-  private Main() {}
-
-  public static void main(String[] args) {
-    RobotBase.startRobot(SimpleDemo::new);
   }
 }

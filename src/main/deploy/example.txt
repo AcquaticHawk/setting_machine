@@ -1,0 +1,1 @@
+Files in src/main/deploy are copied to /home/lvuser/deploy on the roboRIO when you deploy.

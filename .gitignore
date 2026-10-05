@@ -1,0 +1,33 @@
+# Built files
+/build/
+/bin/
+/out/
+
+# Gradle
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# VS Code / WPILib editor junk (if opened elsewhere)
+.vscode/
+*.code-workspace
+
+# Simulation / runtime
+*.wpilog
+networktables.json
+networktables.json.bck
+glass.json
+outlineviewer.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Imported vendor backups inside jars are fine; ignore local maven spills
+**/hs_err_pid*
