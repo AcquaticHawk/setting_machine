@@ -6,17 +6,27 @@
           "open": true
         }
       },
+      "SPARK MAX [1] MAXMOTION": {
+        "header": {
+          "open": true
+        }
+      },
       "SPARK MAX [1] RELATIVE ENCODER": {
         "header": {
           "open": true
         }
       },
-      "SPARK MAX [2]": {
+      "SPARK MAX [3]": {
         "header": {
           "open": true
         }
       },
-      "SPARK MAX [2] RELATIVE ENCODER": {
+      "SPARK MAX [3] MAXMOTION": {
+        "header": {
+          "open": true
+        }
+      },
+      "SPARK MAX [3] RELATIVE ENCODER": {
         "header": {
           "open": true
         }
@@ -34,6 +44,15 @@
     }
   },
   "NetworkTables Info": {
+    "Clients": {
+      "open": true
+    },
+    "Connections": {
+      "open": true
+    },
+    "Server": {
+      "open": true
+    },
     "visible": true
   }
 }

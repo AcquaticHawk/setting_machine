@@ -11,8 +11,16 @@
       "style": "0",
       "userScale": "2",
       "width": "1910",
-      "xpos": "1299",
+      "xpos": "1420",
       "ypos": "345"
+    }
+  },
+  "Table": {
+    "0xE56EC1C2,4": {
+      "Column 0  Weight": "1.0000",
+      "Column 1  Weight": "1.0000",
+      "Column 2  Weight": "1.0000",
+      "Column 3  Weight": "1.0000"
     }
   },
   "Window": {
@@ -23,8 +31,8 @@
     },
     "###Joysticks": {
       "Collapsed": "0",
-      "Pos": "251,464",
-      "Size": "796,155"
+      "Pos": "254,629",
+      "Size": "796,206"
     },
     "###NetworkTables": {
       "Collapsed": "0",
