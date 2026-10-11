@@ -1,22 +1,24 @@
-// Simple teleop demo: flywheel + intake SPARK MAX / NEO pair
+// Simple teleop demo: flywheel + intake + gear SPARK MAX / NEO
 //
 // Sequence (Teleop, Xbox port 0):
-//   1. Start with all motors off
+//   1. Start with flywheel/intake off; gear holds position
 //   2. A - spin up flywheel to target RPM
 //   3. When target is reached - controller rumble "beep" (ready signal)
 //   4. X - start intake (only allowed after ready signal)
-//   5. Motors keep running until B - stop everything (always, any state)
+//   5. B - stop flywheel + intake (gear keeps holding)
+//   6. Right stick Y - slowly jog gear within its position range (holds when centered)
 //
 // Requires a WPILib + REVLib robot project deployed to a roboRIO.
 // Hardware:
 //   - Flywheel NEO  -> SPARK MAX CAN ID 1 (default)
 //   - Intake NEO    -> SPARK MAX CAN ID 2 (default)
+//   - Gear NEO      -> SPARK MAX CAN ID 3 (default)
 //   - Xbox controller on port 0
 //
 // Drop these files into src/main/java/ (adjust package if your project uses one).
 // If your project already has Main.java / Robot.java, either:
 //   - point Main at SimpleDemo::new, or
-//   - copy Flywheel / Intake into your subsystems and delete Main below.
+//   - copy Flywheel / Intake / Gear into your subsystems and delete Main below.
 
 package frc.robot;
 
@@ -29,18 +31,23 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
- * Teleop-only demo: A spins up flywheel, ready beep, X starts intake, B kills all.
+ * Teleop-only demo: A spins up flywheel, ready beep, X starts intake, B kills shooters,
+ * right stick Y slowly jogs a position-holding gear.
  */
 public class SimpleDemo extends TimedRobot {
   // --- Hardware ---
   private static final int kFlywheelCanId = 1; // change to your flywheel SPARK MAX CAN ID
   private static final int kIntakeCanId = 2; // change to your intake SPARK MAX CAN ID
+  private static final int kGearCanId = 3; // change to your gear SPARK MAX CAN ID
   private static final int kControllerPort = 0;
 
   private static final double kBeepDurationSec = 0.35;
+  /** Teleop loop period used to integrate joystick jog rate into gear position. */
+  private static final double kTeleopDtSeconds = 0.02;
 
   private final Flywheel flywheel = new Flywheel(kFlywheelCanId, false);
   private final Intake intake = new Intake(kIntakeCanId, false);
+  private final Gear gear = new Gear(kGearCanId, false);
   private final XboxController driver = new XboxController(kControllerPort);
   private final Timer beepTimer = new Timer();
 
@@ -81,11 +88,12 @@ public class SimpleDemo extends TimedRobot {
   public void simulationPeriodic() {
     double flywheelAmps = flywheel.simulationPeriodic();
     double intakeAmps = intake.simulationPeriodic();
+    double gearAmps = gear.simulationPeriodic();
     // Use |I| so sign quirks cannot inflate load; floor Vin so a transient spike
     // cannot permanently brown out the sim and pin the flywheel at ~500 RPM.
     double loaded =
         BatterySim.calculateDefaultBatteryLoadedVoltage(
-            Math.abs(flywheelAmps), Math.abs(intakeAmps));
+            Math.abs(flywheelAmps), Math.abs(intakeAmps), Math.abs(gearAmps));
     RoboRioSim.setVInVoltage(Math.max(10.0, loaded));
   }
 
@@ -107,8 +115,9 @@ public class SimpleDemo extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    // System starts with nothing running.
-    stopAll();
+    // Shooters start off; gear begins holding its current pose.
+    stopShooters();
+    gear.enableHold();
   }
 
   @Override
@@ -117,9 +126,9 @@ public class SimpleDemo extends TimedRobot {
     boolean b = driver.getBButton();
     boolean x = driver.getXButton();
 
-    // B always turns off all motors, regardless of state.
+    // B always turns off flywheel + intake; gear keeps holding position.
     if (b && !prevB) {
-      stopAll();
+      stopShooters();
     } else {
       // A starts flywheel spin-up. Intake stays gated until target is reached.
       if (a && !prevA) {
@@ -137,6 +146,10 @@ public class SimpleDemo extends TimedRobot {
       }
     }
 
+    // Right stick Y: up jogs gear toward max, down toward min; centered holds.
+    // WPILib reports stick up as negative, so negate for natural "up = forward".
+    gear.jog(-driver.getRightY(), kTeleopDtSeconds);
+
     prevA = a;
     prevB = b;
     prevX = x;
@@ -144,7 +157,9 @@ public class SimpleDemo extends TimedRobot {
 
   @Override
   public void testInit() {
-    stopAll();
+    // Match teleop so bench testing includes gear hold + jog.
+    stopShooters();
+    gear.enableHold();
   }
 
   @Override
@@ -157,8 +172,14 @@ public class SimpleDemo extends TimedRobot {
   // Helpers
   // ---------------------------------------------------------------------------
 
-  /** Stop flywheel + intake and clear ready/intake gate state. */
+  /** Stop every actuator (used in disabled / robot init). */
   private void stopAll() {
+    stopShooters();
+    gear.disable();
+  }
+
+  /** Stop flywheel + intake and clear ready/intake gate state. Gear is unchanged. */
+  private void stopShooters() {
     flywheel.disable();
     intake.disable();
     intakeAllowed = false;
@@ -187,6 +208,7 @@ public class SimpleDemo extends TimedRobot {
   private void reportTelemetry() {
     flywheel.reportTelemetry();
     intake.reportTelemetry();
+    gear.reportTelemetry();
     SmartDashboard.putBoolean("Demo/IntakeAllowed", intakeAllowed);
     SmartDashboard.putBoolean("Demo/ReadyBeepPlayed", readyBeepPlayed);
   }
