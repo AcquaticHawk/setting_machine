@@ -27,8 +27,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Flywheel implements AutoCloseable {
   // Hardware budget: peak spin-up current. Hold at 4690 RPM unloaded is only a few amps.
-  private static final int kCurrentLimitAmps = 10;
-  private static final double kDefaultTargetRpm = 4690.0;
+  private static final int kCurrentLimitAmps = 14;
+  // private static final double kDefaultTargetRpm = 4690.0;
+  private static final double kDefaultTargetRpm = 2500.0;
   private static final double kAtTargetToleranceRpm = 100.0;
 
   // NEO free speed ~5820 RPM @ 12 V. Used for feedforward guess + MAXMotion ceiling.
@@ -38,7 +39,7 @@ public class Flywheel implements AutoCloseable {
   private static final double kVelocityFfVoltsPerRpm = kNominalBatteryVolts / kNeoFreeSpeedRpm;
 
   // MAXMotion accel (RPM/s). ~500 → ~9 s profile to 4690; 10 A may stretch that further.
-  private static final double kMaxAccelRpmPerSec = 500.0;
+  private static final double kMaxAccelRpmPerSec = 200.0;
 
   // Sim plant MOI. Higher J = longer spool + longer coast (closer to a real wheel).
   private static final double kSimMoiKgMetersSquared = 0.002;
