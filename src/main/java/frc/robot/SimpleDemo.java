@@ -46,12 +46,8 @@ public class SimpleDemo extends TimedRobot {
   private static final double kTeleopDtSeconds = 0.02;
 
   private final Flywheel flywheel = new Flywheel(kFlywheelCanId, false);
-<<<<<<< Updated upstream
-  private final Intake intake = new Intake(kIntakeCanId, false);
-  private final Gear gear = new Gear(kGearCanId, false);
-=======
   private final Intake intake = new Intake(kIntakeCanId, true);
->>>>>>> Stashed changes
+  private final Gear gear = new Gear(kGearCanId, false);
   private final XboxController driver = new XboxController(kControllerPort);
   private final Timer beepTimer = new Timer();
 
